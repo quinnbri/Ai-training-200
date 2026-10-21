@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cloud-finops-copilot"
+version = "1.0.0"
+description = "Enterprise Multi-Agent AI Copilot for Cloud FinOps Cost Anomaly Attribution & SRE Incident Remediation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Brian Quinn"}
+]
+dependencies = [
+    "google-genai>=1.0.0",
+    "google-cloud-secret-manager>=2.16.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tools*", "memory*", "orchestrator*", "observability*", "secrets*", "eval*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

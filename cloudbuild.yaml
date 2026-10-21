@@ -1,0 +1,37 @@
+steps:
+  # Step 1: Run automated unit tests & golden evaluation harness
+  - name: 'python:3.11'
+    entrypoint: 'python3'
+    args: ['-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_*.py', '-v']
+    env:
+      - 'PYTHONPATH=.'
+
+  # Step 2: Execute Golden Dataset Static Evaluation Gate
+  - name: 'python:3.11'
+    entrypoint: 'python3'
+    args: ['eval/eval_harness.py']
+    env:
+      - 'PYTHONPATH=.'
+
+  # Step 3: Build production container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/cloud-finops-copilot:$COMMIT_SHA', '.']
+
+  # Step 4: Push image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/cloud-finops-copilot:$COMMIT_SHA']
+
+  # Step 5: Deploy to Google Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'cloud-finops-copilot'
+      - '--image=gcr.io/$PROJECT_ID/cloud-finops-copilot:$COMMIT_SHA'
+      - '--region=us-east1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+
+images:
+  - 'gcr.io/$PROJECT_ID/cloud-finops-copilot:$COMMIT_SHA'
